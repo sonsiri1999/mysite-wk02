@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Submit JSON Form</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        form { max-width: 500px; padding: 20px; border: 1px solid #ccc; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        label { display: block; margin-bottom: 8px; font-weight: bold; }
+        input[type="text"], textarea { width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+        button { background-color: #4CAF50; color: white; padding: 12px 20px; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; }
+        button:hover { background-color: #45a049; }
+        #response { margin-top: 20px; padding: 15px; background-color: #f0f0f0; border: 1px solid #ddd; border-radius: 4px; white-space: pre-wrap; font-family: monospace; }
+    </style>
+</head>
+<body>
+    <h1>ส่งข้อมูลคำถาม (JSON)</h1>
+
+    <form id="questionForm">
+        <label for="questionId">ID:</label>
+        <input type="text" id="questionId" name="id" value="10" required><br>
+
+        <label for="questionText">ข้อความคำถาม:</label>
+        <input type="text" id="questionText" name="text" value="สัตว์เลี้ยงลูกด้วยนมที่บินได้คืออะไร?" required><br>
+
+        <label for="choices">ตัวเลือก (คั่นด้วยคอมม่า):</label>
+        <textarea id="choices" name="choices" rows="3" required>ค้างคาว,นก,ผึ้ง,ปลาวาฬ</textarea><br>
+
+        <button type="submit">ส่งคำถาม</button>
+    </form>
+
+    <h2>ผลลัพธ์จากเซิร์ฟเวอร์:</h2>
+    <pre id="response">รอการส่งข้อมูล...</pre>
+
+    <script>
+        document.getElementById('questionForm').addEventListener('submit', async function(event) {
+            event.preventDefault(); // ป้องกันการ submit ฟอร์มแบบปกติ
+
+            const questionId = document.getElementById('questionId').value;
+            const questionText = document.getElementById('questionText').value;
+            // แยกตัวเลือกจาก string ที่คั่นด้วยคอมม่าเป็น array
+            const choicesString = document.getElementById('choices').value;
+            const choicesArray = choicesString.split(',').map(choice => choice.trim());
+
+            // สร้าง Object JSON จากข้อมูลในฟอร์ม
+            const formData = {
+                id: parseInt(questionId), // แปลงเป็นตัวเลข
+                text: questionText,
+                choices: choicesArray
+            };
+
+            const responseDiv = document.getElementById('response');
+            responseDiv.textContent = 'กำลังส่งข้อมูล...';
+
+            try {
+                const response = await fetch('http://127.0.0.1:8000/quiz/question/create/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData) // แปลง Object JSON เป็น String เพื่อส่งไป
+                });
+
+                const result = await response.json(); // อ่านผลลัพธ์เป็น JSON
+
+                if (response.ok) { // ตรวจสอบว่า HTTP status เป็น 2xx (สำเร็จ)
+                    responseDiv.textContent = 'สำเร็จ! ได้รับข้อมูลจากเซิร์ฟเวอร์:\n' + JSON.stringify(result, null, 2);
+                    responseDiv.style.backgroundColor = '#e6ffe6'; // สีเขียวอ่อนสำหรับสำเร็จ
+                } else {
+                    // กรณีเซิร์ฟเวอร์ตอบกลับเป็นข้อผิดพลาด
+                    responseDiv.textContent = 'ข้อผิดพลาด (' + response.status + '): ' + JSON.stringify(result, null, 2);
+                    responseDiv.style.backgroundColor = '#ffe6e6'; // สีแดงอ่อนสำหรับข้อผิดพลาด
+                }
+
+            } catch (error) {
+                console.error('เกิดข้อผิดพลาดในการส่งข้อมูล:', error);
+                responseDiv.textContent = 'เกิดข้อผิดพลาดในการเชื่อมต่อ: ' + error.message;
+                responseDiv.style.backgroundColor = '#ffe6e6'; // สีแดงอ่อนสำหรับข้อผิดพลาด
+            }
+        });
+    </script>
+</body>
+</html>

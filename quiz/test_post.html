@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Django POST API</title>
+</head>
+<body>
+    <h1>Send POST Request to Django</h1>
+    <form id="postForm" method="POST" action="http://127.0.0.1:8000/quiz/question/create/">
+        <button type="submit">Send POST Request</button>
+    </form>
+
+    <p>Check the browser's developer console (F12) for network response.</p>
+
+    <script>
+        // ถ้าคุณต้องการส่ง JSON จริงๆ จากฟอร์ม
+        // คุณจะต้องใช้ JavaScript เพื่อ intercept form submit
+        // และส่งด้วย Fetch API แทนการ submit ฟอร์มโดยตรง
+        document.getElementById('postForm').addEventListener('submit', function(event) {
+            event.preventDefault(); // ป้องกันการส่งฟอร์มแบบปกติ
+
+            fetch(this.action, {
+                method: this.method,
+                headers: {
+                    'Content-Type': 'application/json'
+                    // ไม่ต้องส่ง CSRF token ถ้าคุณใช้ @csrf_exempt
+                },
+                body: JSON.stringify({ /* ใส่ข้อมูลที่คุณต้องการส่งที่นี่ เช่น "key": "value" */ })
+            })
+            .then(response => {
+                console.log('Status:', response.status);
+                return response.json();
+            })
+            .then(data => {
+                console.log('Success (JSON):', data);
+                alert('Response from server: ' + JSON.stringify(data, null, 2));
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error: ' + error.message);
+            });
+        });
+    </script>
+</body>
+</html>

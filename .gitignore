@@ -1,0 +1,25 @@
+# Virtual environment
+/venv/
+/.idea/
+.env
+
+# Byte-code files
+*.pyc
+__pycache__/
+
+# Database
+db.sqlite3
+*.sqlite3
+
+# Media and static files (if they are generated)
+/media/
+/static/
+
+# Development specific
+*.log
+*.pot
+.DS_Store
+.vscode/
+
+# Django specific
+/local_settings.py
